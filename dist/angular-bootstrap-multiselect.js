@@ -37,12 +37,7 @@
                 $scope.searchLimit = $scope.searchLimit || 25;
 
                 $scope.searchFilter = '';
-
                 $scope.resolvedOptions = [];
-                if (typeof $scope.options !== 'function') {
-                    $scope.resolvedOptions = $scope.options;
-                }
-
                 if (typeof $attrs.disabled != 'undefined') {
                     $scope.disabled = true;
                 }
@@ -83,6 +78,22 @@
                         });
                     }
                 };
+
+                if (Array.isArray($scope.options)) {
+                    $scope.resolvedOptions = $scope.options;
+                } else {
+                    var promise;
+                    if (typeof $scope.options === 'function') {
+                        promise = $scope.options();
+                    } else {
+                        promise = $scope.options;
+                    }
+
+                    promise.then(function (resolvedOptions) {
+                        $scope.resolvedOptions = resolvedOptions;
+                        updateSelectionLists();
+                    });
+                }
 
                 $ngModelCtrl.$render = function () {
                     updateSelectionLists();
@@ -234,7 +245,7 @@
 
 angular.module('btorfs.multiselect.templates', ['multiselect.html']);
 
-angular.module("multiselect.html", []).run(["$templateCache", function($templateCache) {
+angular.module("multiselect.html", []).run(["$templateCache", function ($templateCache) {
   $templateCache.put("multiselect.html",
     "<div class=\"btn-group\" style=\"width: 100%\">\n" +
     "    <button type=\"button\" class=\"btn btn-default btn-block dropdown-toggle\" ng-click=\"toggleDropdown()\" ng-disabled=\"disabled\">\n" +
